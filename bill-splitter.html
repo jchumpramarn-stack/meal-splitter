@@ -1,0 +1,464 @@
+
+
+<!DOCTYPE html>
+
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>หารค่าข้าว</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Prompt:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0e0a; --surface: #1a1814; --card: #221f18;
+  --border: #3a3425; --accent: #e8a832; --accent2: #f5c842;
+  --red: #e84c3d; --green: #4caf7d; --text: #f0e8d5; --muted: #8a7d65; --r: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--text); font-family: 'Sarabun', sans-serif; min-height: 100vh; padding-bottom: 80px; }
+
+header { background: linear-gradient(135deg,#1a1408,#2a2010); border-bottom: 2px solid var(–accent); padding: 28px 20px 22px; text-align: center; position: relative; overflow: hidden; }
+header::before { content:’’; position:absolute; top:-40px; left:50%; transform:translateX(-50%); width:300px; height:120px; background:radial-gradient(ellipse,rgba(232,168,50,.18),transparent 70%); }
+header .emo { font-size:2.4rem; display:block; margin-bottom:6px; }
+header h1 { font-family:‘Prompt’,sans-serif; font-size:1.85rem; font-weight:800; color:var(–accent); letter-spacing:-.5px; }
+header p { color:var(–muted); font-size:.85rem; margin-top:4px; }
+
+.wrap { max-width:600px; margin:0 auto; padding:0 16px; }
+.slabel { font-family:‘Prompt’,sans-serif; font-size:.7rem; font-weight:700; letter-spacing:2px; color:var(–accent); text-transform:uppercase; margin:28px 0 12px; }
+.card { background:var(–card); border:1px solid var(–border); border-radius:var(–r); padding:18px; }
+
+#person-list { display:flex; flex-direction:column; gap:10px; }
+.prow { display:flex; align-items:center; gap:10px; background:var(–surface); border:1px solid var(–border); border-radius:10px; padding:10px 12px; animation:fi .22s ease; }
+.pnum { background:var(–accent); color:#000; font-family:‘Prompt’,sans-serif; font-weight:700; font-size:.75rem; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+/* The most important fix: all inputs use type=text */
+.finput { flex:1; background:transparent; border:none; outline:none; color:var(–text); font-family:‘Sarabun’,sans-serif; font-size:1rem; padding:4px 0; min-width:0; }
+.finput::placeholder { color:var(–muted); }
+
+#menu-list { display:flex; flex-direction:column; gap:10px; }
+.mrow { display:flex; align-items:center; gap:8px; background:var(–surface); border:1px solid var(–border); border-radius:10px; padding:10px 12px; flex-wrap:wrap; animation:fi .22s ease; }
+.mname { flex:2; min-width:80px; }
+.mprice { width:62px; text-align:right; }
+.pricebox { display:flex; align-items:center; gap:4px; background:rgba(232,168,50,.08); border:1px solid rgba(232,168,50,.2); border-radius:7px; padding:4px 10px; min-width:90px; }
+.pricebox .sym { color:var(–accent); font-size:.8rem; font-weight:600; flex-shrink:0; }
+.dvdr { width:1px; height:20px; background:var(–border); flex-shrink:0; }
+.badge { background:rgba(76,175,125,.12); border:1px solid rgba(76,175,125,.3); color:var(–green); font-size:.7rem; font-weight:600; padding:2px 8px; border-radius:10px; margin-left:auto; white-space:nowrap; min-height:20px; }
+
+.eaters-sec { width:100%; margin-top:8px; }
+.eaters-lbl { font-size:.75rem; color:var(–muted); margin-bottom:6px; }
+.eaters-grid { display:flex; flex-wrap:wrap; gap:6px; }
+.chip { display:inline-flex; align-items:center; gap:4px; padding:5px 11px; border-radius:20px; border:1.5px solid var(–border); font-size:.78rem; font-family:‘Sarabun’,sans-serif; cursor:pointer; -webkit-user-select:none; user-select:none; color:var(–muted); background:transparent; transition:border-color .12s,color .12s,background .12s; touch-action:manipulation; }
+.chip.on { background:rgba(232,168,50,.15); border-color:var(–accent); color:var(–accent); font-weight:600; }
+.chip .dot { width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0; }
+
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; border:none; cursor:pointer; font-family:‘Prompt’,sans-serif; font-weight:600; border-radius:10px; padding:10px 18px; font-size:.9rem; transition:all .15s; touch-action:manipulation; }
+.btn-ghost { background:transparent; border:1.5px solid var(–border); color:var(–muted); }
+.btn-ghost:active { border-color:var(–accent); color:var(–accent); }
+.btn-primary { background:var(–accent); color:#000; width:100%; padding:14px; font-size:1rem; font-weight:700; margin-top:8px; }
+.btn-primary:active { background:var(–accent2); }
+.btn-add { margin-top:10px; }
+.btnrm { background:none; border:none; color:var(–muted); cursor:pointer; font-size:1.1rem; padding:4px 8px; border-radius:6px; line-height:1; touch-action:manipulation; }
+
+#summary-sec { display:none; }
+hr.div { border:none; border-top:1px solid var(–border); margin:24px 0; }
+.grand { background:linear-gradient(135deg,#1e1a0d,#2a2412); border:2px solid var(–accent); border-radius:var(–r); padding:20px 22px; display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.grand-lbl { font-family:‘Prompt’,sans-serif; font-weight:700; font-size:1rem; }
+.grand-lbl small { display:block; font-size:.75rem; color:var(–muted); font-weight:400; margin-top:2px; }
+.grand-amt { font-family:‘Prompt’,sans-serif; font-weight:800; font-size:1.6rem; color:var(–accent); }
+.scard { background:var(–card); border:1px solid var(–border); border-radius:var(–r); overflow:hidden; margin-bottom:12px; }
+.shead { display:flex; align-items:center; gap:10px; padding:14px 18px; border-bottom:1px solid var(–border); }
+.savatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(–accent),#c47a10); display:flex; align-items:center; justify-content:center; font-family:‘Prompt’,sans-serif; font-weight:700; font-size:.9rem; color:#000; flex-shrink:0; }
+.sname { font-family:‘Prompt’,sans-serif; font-weight:600; font-size:1rem; }
+.stotal { margin-left:auto; font-family:‘Prompt’,sans-serif; font-weight:700; font-size:1.15rem; color:var(–accent); }
+.sitems { padding:12px 18px; }
+.sitem { display:flex; justify-content:space-between; padding:5px 0; font-size:.88rem; border-bottom:1px dashed rgba(58,52,37,.5); color:var(–muted); }
+.sitem:last-child { border-bottom:none; }
+.sitem-n { flex:1; }
+.sitem-a { color:var(–text); }
+
+.export-row { display:flex; gap:10px; margin-top:14px; }
+.btnexp { flex:1; display:flex; align-items:center; justify-content:center; gap:7px; padding:13px; border-radius:10px; border:1.5px solid var(–border); background:var(–surface); color:var(–text); font-family:‘Prompt’,sans-serif; font-weight:600; font-size:.88rem; cursor:pointer; transition:all .15s; touch-action:manipulation; }
+.btnexp:active { border-color:var(–accent); color:var(–accent); }
+.btnexp.busy { opacity:.55; pointer-events:none; }
+.btn-reset { background:transparent; border:1.5px solid var(–red); color:var(–red); width:100%; padding:12px; font-size:.9rem; margin-top:10px; touch-action:manipulation; }
+.btn-reset:active { background:rgba(232,76,61,.1); }
+.credit { text-align:center; margin-top:40px; padding:20px; border-top:1px solid var(–border); }
+.credit p { color:var(–muted); font-size:.75rem; }
+.credit strong { color:var(–accent); font-family:‘Prompt’,sans-serif; }
+@keyframes fi { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+</style>
+
+</head>
+<body>
+
+<header>
+  <span class="emo">🍜</span>
+  <h1>หารค่าข้าว</h1>
+  <p>แยกค่าอาหารได้แม่นยำ ใครกินอะไร จ่ายแค่นั้น</p>
+</header>
+
+<div class="wrap">
+  <div class="slabel">① รายชื่อคนกิน</div>
+  <div class="card">
+    <div id="person-list"></div>
+    <button class="btn btn-ghost btn-add" id="btn-addp">+ เพิ่มคน</button>
+  </div>
+
+  <div class="slabel">② รายการอาหาร & ราคา</div>
+  <div class="card">
+    <div id="menu-list"></div>
+    <button class="btn btn-ghost btn-add" id="btn-addm">+ เพิ่มเมนู</button>
+  </div>
+
+<button class="btn btn-primary" id="btn-calc">🧮 คำนวณ แยกเลย!</button>
+
+  <div id="summary-sec">
+    <hr class="div">
+    <div class="slabel">③ สรุปค่าใช้จ่ายรายคน</div>
+    <div class="grand">
+      <div class="grand-lbl">ค่าอาหารรวมทั้งหมด<small>ยอดรวมทุกเมนู</small></div>
+      <div class="grand-amt" id="grand-total">฿0</div>
+    </div>
+    <div id="summaries"></div>
+    <div class="export-row">
+      <button class="btnexp" id="btn-img">🖼️ บันทึกรูป</button>
+      <button class="btnexp" id="btn-pdf">📄 บันทึก PDF</button>
+    </div>
+    <button class="btn btn-reset" id="btn-reset">🔄 เริ่มใหม่</button>
+    <div class="credit">
+      <p>คิดโดย <strong>Jitti Chumpramarn</strong></p>
+      <p style="margin-top:4px">หารค่าข้าวแฟร์ๆ ใครกินอะไร จ่ายแค่นั้น 🍽️</p>
+    </div>
+  </div>
+</div>
+
+<script>
+var people = [], menus = [], pc = 0, mc = 0;
+
+function plabel(p) {
+  return p.name.trim() || ('คน ' + (people.indexOf(p) + 1));
+}
+
+/* ─── Person ─────────────────────────── */
+function addPerson() {
+  pc++;
+  var p = { id: 'p' + pc, name: '' };
+  people.push(p);
+
+  var list = document.getElementById('person-list');
+  var row = document.createElement('div');
+  row.className = 'prow';
+  row.dataset.pid = p.id;
+
+  var num = document.createElement('div');
+  num.className = 'pnum';
+  num.textContent = people.length;
+
+  var inp = document.createElement('input');
+  inp.className = 'finput';
+  inp.type = 'text';           // always text — never number
+  inp.inputMode = 'text';
+  inp.autocomplete = 'off';
+  inp.setAttribute('autocorrect', 'off');
+  inp.setAttribute('spellcheck', 'false');
+  inp.placeholder = 'ชื่อคน...';
+  inp.addEventListener('input', function() {
+    p.name = inp.value;
+    // Do NOT touch any other DOM here — Safari on iframe blurs on any DOM mutation while typing
+  });
+  inp.addEventListener('blur', function() {
+    // Update chip labels only after user leaves the field
+    document.querySelectorAll('.chip[data-pid="' + p.id + '"] .clbl').forEach(function(el) {
+      el.textContent = plabel(p);
+    });
+  });
+
+  var rm = document.createElement('button');
+  rm.className = 'btnrm';
+  rm.type = 'button';
+  rm.textContent = '✕';
+  rm.addEventListener('click', function() { removePerson(p.id); });
+
+  row.appendChild(num);
+  row.appendChild(inp);
+  row.appendChild(rm);
+  list.appendChild(row);
+
+  // add chip to every existing menu without touching other DOM
+  menus.forEach(function(m) {
+    m.eaters.push(p.id);
+    var grid = document.querySelector('.eaters-grid[data-mid="' + m.id + '"]');
+    if (grid) grid.appendChild(makeChip(m, p));
+    refreshBadge(m);
+  });
+}
+
+function removePerson(id) {
+  var idx = people.findIndex(function(p) { return p.id === id; });
+  if (idx === -1) return;
+  people.splice(idx, 1);
+  menus.forEach(function(m) {
+    m.eaters = m.eaters.filter(function(e) { return e !== id; });
+  });
+  var row = document.querySelector('.prow[data-pid="' + id + '"]');
+  if (row) row.remove();
+  document.querySelectorAll('.prow').forEach(function(r, i) {
+    r.querySelector('.pnum').textContent = i + 1;
+  });
+  document.querySelectorAll('.chip[data-pid="' + id + '"]').forEach(function(c) { c.remove(); });
+  menus.forEach(refreshBadge);
+}
+
+/* ─── Menu ───────────────────────────── */
+function addMenu() {
+  mc++;
+  var m = { id: 'm' + mc, name: '', price: '', eaters: people.map(function(p) { return p.id; }) };
+  menus.push(m);
+
+  var list = document.getElementById('menu-list');
+  var row = document.createElement('div');
+  row.className = 'mrow';
+  row.dataset.mid = m.id;
+
+  var nameInp = document.createElement('input');
+  nameInp.className = 'finput mname';
+  nameInp.type = 'text';
+  nameInp.inputMode = 'text';
+  nameInp.autocomplete = 'off';
+  nameInp.setAttribute('autocorrect', 'off');
+  nameInp.setAttribute('spellcheck', 'false');
+  nameInp.placeholder = 'ชื่อเมนู...';
+  nameInp.addEventListener('input', function() { m.name = nameInp.value; });
+
+  var dvdr = document.createElement('div');
+  dvdr.className = 'dvdr';
+
+  var pbox = document.createElement('div');
+  pbox.className = 'pricebox';
+  var sym = document.createElement('span');
+  sym.className = 'sym';
+  sym.textContent = '฿';
+
+  var priceInp = document.createElement('input');
+  priceInp.className = 'finput mprice';
+  // KEY FIX: type="text" + inputmode="decimal"
+  // type="number" causes iOS Safari to dismiss keyboard when switching keypad types
+  priceInp.type = 'text';
+  priceInp.inputMode = 'decimal';
+  priceInp.pattern = '[0-9]*\\.?[0-9]*';
+  priceInp.autocomplete = 'off';
+  priceInp.placeholder = '0';
+  priceInp.addEventListener('input', function() {
+    // Only update state — do NOT call refreshBadge (touches DOM → Safari blurs)
+    var v = priceInp.value.replace(/[^0-9.]/g, '');
+    if (v !== priceInp.value) {
+      var pos = priceInp.selectionStart - (priceInp.value.length - v.length);
+      priceInp.value = v;
+      priceInp.setSelectionRange(pos, pos);
+    }
+    m.price = v;
+  });
+  priceInp.addEventListener('blur', function() {
+    // Safe to touch DOM after focus leaves
+    refreshBadge(m);
+  });
+
+  pbox.appendChild(sym);
+  pbox.appendChild(priceInp);
+
+  var rm = document.createElement('button');
+  rm.className = 'btnrm';
+  rm.type = 'button';
+  rm.textContent = '✕';
+  rm.addEventListener('click', function() { removeMenu(m.id); });
+
+  var bdg = document.createElement('span');
+  bdg.className = 'badge';
+  bdg.dataset.bdg = m.id;
+
+  var esec = document.createElement('div');
+  esec.className = 'eaters-sec';
+  var elbl = document.createElement('div');
+  elbl.className = 'eaters-lbl';
+  elbl.textContent = 'ใครกินบ้าง?';
+  var grid = document.createElement('div');
+  grid.className = 'eaters-grid';
+  grid.dataset.mid = m.id;
+  people.forEach(function(p) { grid.appendChild(makeChip(m, p)); });
+  esec.appendChild(elbl);
+  esec.appendChild(grid);
+
+  row.appendChild(nameInp);
+  row.appendChild(dvdr);
+  row.appendChild(pbox);
+  row.appendChild(rm);
+  row.appendChild(bdg);
+  row.appendChild(esec);
+  list.appendChild(row);
+  refreshBadge(m);
+}
+
+function removeMenu(id) {
+  menus = menus.filter(function(m) { return m.id !== id; });
+  var row = document.querySelector('.mrow[data-mid="' + id + '"]');
+  if (row) row.remove();
+}
+
+function makeChip(m, p) {
+  var chip = document.createElement('span');
+  chip.className = 'chip' + (m.eaters.indexOf(p.id) !== -1 ? ' on' : '');
+  chip.dataset.pid = p.id;
+  chip.dataset.mid = m.id;
+  var dot = document.createElement('span');
+  dot.className = 'dot';
+  var lbl = document.createElement('span');
+  lbl.className = 'clbl';
+  lbl.textContent = plabel(p);
+  chip.appendChild(dot);
+  chip.appendChild(lbl);
+  chip.addEventListener('click', function() {
+    var i = m.eaters.indexOf(p.id);
+    if (i !== -1) { m.eaters.splice(i, 1); chip.classList.remove('on'); }
+    else { m.eaters.push(p.id); chip.classList.add('on'); }
+    refreshBadge(m);
+  });
+  return chip;
+}
+
+function refreshBadge(m) {
+  var bdg = document.querySelector('.badge[data-bdg="' + m.id + '"]');
+  if (!bdg) return;
+  var n = m.eaters.length, price = parseFloat(m.price) || 0;
+  bdg.textContent = (n > 1 && price > 0) ? ('÷' + n + ' = ฿' + (price / n).toFixed(2) + '/คน') : '';
+}
+
+/* ─── Calculate ──────────────────────── */
+document.getElementById('btn-calc').addEventListener('click', function() {
+  if (!people.length) { alert('กรุณาเพิ่มรายชื่อคนก่อนนะ!'); return; }
+  if (!menus.length)  { alert('กรุณาเพิ่มเมนูอาหารก่อนนะ!'); return; }
+
+  var totals = {};
+  people.forEach(function(p) { totals[p.id] = { total: 0, items: [] }; });
+  var grand = 0;
+
+  menus.forEach(function(m) {
+    var price = parseFloat(m.price) || 0;
+    grand += price;
+    if (!m.eaters.length) return;
+    var share = price / m.eaters.length;
+    m.eaters.forEach(function(eid) {
+      if (totals[eid]) {
+        totals[eid].total += share;
+        totals[eid].items.push({ name: m.name || 'เมนูไม่มีชื่อ', share: share, n: m.eaters.length });
+      }
+    });
+  });
+
+  document.getElementById('grand-total').textContent =
+    '฿' + grand.toLocaleString('th-TH', { minimumFractionDigits: 2 });
+
+  var con = document.getElementById('summaries');
+  con.innerHTML = '';
+
+  people.forEach(function(p, i) {
+    var d = totals[p.id], name = plabel(p);
+    var card = document.createElement('div');
+    card.className = 'scard';
+    card.style.cssText = 'animation:fi .3s ease ' + (i * 0.07) + 's both';
+
+    var itemsHtml = !d.items.length
+      ? '<div class="sitem"><span class="sitem-n" style="color:var(--muted)">ไม่ได้กินอะไรเลย</span><span>-</span></div>'
+      : d.items.map(function(it) {
+          return '<div class="sitem"><span class="sitem-n">' + esc(it.name) +
+            (it.n > 1 ? ' <small>(÷' + it.n + ')</small>' : '') +
+            '</span><span class="sitem-a">฿' +
+            it.share.toLocaleString('th-TH',{minimumFractionDigits:2}) + '</span></div>';
+        }).join('');
+
+    card.innerHTML =
+      '<div class="shead">' +
+        '<div class="savatar">' + esc(name.charAt(0).toUpperCase()) + '</div>' +
+        '<div class="sname">' + esc(name) + '</div>' +
+        '<div class="stotal">฿' + d.total.toLocaleString('th-TH',{minimumFractionDigits:2}) + '</div>' +
+      '</div><div class="sitems">' + itemsHtml + '</div>';
+    con.appendChild(card);
+  });
+
+  var sec = document.getElementById('summary-sec');
+  sec.style.display = 'block';
+  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ─── Export (lazy-load scripts) ─────── */
+function loadScript(src, cb) {
+  if (document.querySelector('script[src="' + src + '"]')) { cb(); return; }
+  var s = document.createElement('script');
+  s.src = src;
+  s.onload = cb;
+  document.body.appendChild(s);
+}
+
+var H2C = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+var JPDF = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+
+document.getElementById('btn-img').addEventListener('click', function() {
+  var btn = this;
+  btn.classList.add('busy'); btn.textContent = '⏳ กำลังสร้าง...';
+  loadScript(H2C, function() {
+    html2canvas(document.getElementById('summary-sec'), { backgroundColor:'#0f0e0a', scale:2, useCORS:true, logging:false })
+    .then(function(canvas) {
+      var a = document.createElement('a');
+      a.download = 'หารค่าข้าว.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    })
+    .catch(function(e) { alert('Error: ' + e.message); })
+    .finally(function() { btn.classList.remove('busy'); btn.textContent = '🖼️ บันทึกรูป'; });
+  });
+});
+
+document.getElementById('btn-pdf').addEventListener('click', function() {
+  var btn = this;
+  btn.classList.add('busy'); btn.textContent = '⏳ กำลังสร้าง...';
+  loadScript(H2C, function() {
+    loadScript(JPDF, function() {
+      html2canvas(document.getElementById('summary-sec'), { backgroundColor:'#0f0e0a', scale:2, useCORS:true, logging:false })
+      .then(function(canvas) {
+        var img = canvas.toDataURL('image/png');
+        var jsPDF = window.jspdf.jsPDF;
+        var pw = 210, ph = (canvas.height / canvas.width) * pw;
+        var pdf = new jsPDF({ orientation: ph > pw ? 'p':'l', unit:'mm', format:[pw,ph] });
+        pdf.addImage(img, 'PNG', 0, 0, pw, ph);
+        pdf.save('หารค่าข้าว.pdf');
+      })
+      .catch(function(e) { alert('Error: ' + e.message); })
+      .finally(function() { btn.classList.remove('busy'); btn.textContent = '📄 บันทึก PDF'; });
+    });
+  });
+});
+
+/* ─── Reset ──────────────────────────── */
+document.getElementById('btn-reset').addEventListener('click', function() {
+  people = []; menus = []; pc = 0; mc = 0;
+  document.getElementById('person-list').innerHTML = '';
+  document.getElementById('menu-list').innerHTML = '';
+  document.getElementById('summary-sec').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  addPerson(); addPerson(); addPerson();
+  addMenu(); addMenu();
+});
+
+document.getElementById('btn-addp').addEventListener('click', addPerson);
+document.getElementById('btn-addm').addEventListener('click', addMenu);
+
+/* ─── Init ───────────────────────────── */
+addPerson(); addPerson(); addPerson();
+addMenu(); addMenu();
+</script>
+
+</body>
+</html>
