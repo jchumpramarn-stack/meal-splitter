@@ -70,10 +70,18 @@ header p { color:var(--muted); font-size:.85rem; margin-top:4px; }
 
 #summary-sec { display:none; }
 hr.div { border:none; border-top:1px solid var(--border); margin:30px 0; }
-.grand { background:linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02)); border:1px solid var(--text); border-radius:var(--r); padding:22px 24px; display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; box-shadow: 0 4px 15px rgba(255,255,255,0.05); }
+
+/* อัปเดต CSS สำหรับใบเสร็จยอดรวม */
+.grand { background:linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02)); border:1px solid var(--text); border-radius:var(--r); padding:22px 24px; display:flex; flex-direction:column; margin-bottom:16px; box-shadow: 0 4px 15px rgba(255,255,255,0.05); }
+.grand-header { display:flex; justify-content:space-between; align-items:center; width:100%; }
+.grand-items { width:100%; margin-top:16px; padding-top:12px; border-top:1px dashed rgba(255,255,255,.2); display:flex; flex-direction:column; gap:6px; }
+.gitem { display:flex; justify-content:space-between; font-size:.95rem; color:var(--muted); }
+.gitem-a { color:var(--text); font-weight:600; }
+
 .grand-lbl { font-family:'Prompt',sans-serif; font-weight:700; font-size:1.05rem; }
 .grand-lbl small { display:block; font-size:.8rem; color:var(--muted); font-weight:400; margin-top:4px; }
 .grand-amt { font-family:'Prompt',sans-serif; font-weight:800; font-size:1.8rem; color:var(--text); }
+
 .scard { background:var(--card); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; margin-bottom:12px; transition: transform 0.2s; }
 .scard:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.3); }
 .shead { display:flex; align-items:center; gap:12px; padding:16px 20px; border-bottom:1px solid var(--border); background: rgba(255,255,255,0.02); }
@@ -124,10 +132,18 @@ hr.div { border:none; border-top:1px solid var(--border); margin:30px 0; }
   <div id="summary-sec">
     <hr class="div">
     <div class="slabel">③ สรุปค่าใช้จ่ายรายคน</div>
-    <div class="grand">
-      <div class="grand-lbl">ค่าอาหารรวมทั้งหมด<small>ยอดรวมทุกเมนู</small></div>
-      <div class="grand-amt" id="grand-total">฿0</div>
+    
+    <!-- อัปเดต HTML กล่องยอดรวม -->
+    <div class="grand" id="grand-receipt">
+      <div class="grand-header">
+        <div class="grand-lbl">ค่าอาหารรวมทั้งหมด<small>ยอดรวมทุกเมนู</small></div>
+        <div class="grand-amt" id="grand-total">฿0</div>
+      </div>
+      <div class="grand-items" id="grand-items">
+        <!-- รายการอาหารจะถูกใส่ตรงนี้ -->
+      </div>
     </div>
+    
     <div id="summaries"></div>
     <div class="export-row">
       <button class="btnexp" id="btn-img">🖼️ บันทึกรูป</button>
@@ -148,7 +164,6 @@ function plabel(p) {
   return p.name.trim() || ('คน ' + (people.indexOf(p) + 1));
 }
 
-/* ─── Person ─────────────────────────── */
 function addPerson() {
   pc++;
   var p = { id: 'p' + pc, name: '' };
@@ -215,7 +230,6 @@ function removePerson(id) {
   menus.forEach(refreshBadge);
 }
 
-/* ─── Menu ───────────────────────────── */
 function addMenu() {
   mc++;
   var m = { id: 'm' + mc, name: '', price: '', eaters: people.map(function(p) { return p.id; }) };
@@ -334,17 +348,24 @@ function refreshBadge(m) {
   bdg.textContent = (n > 1 && price > 0) ? ('÷' + n + ' = ฿' + (price / n).toFixed(2) + '/คน') : '';
 }
 
-/* ─── Calculate ──────────────────────── */
 document.getElementById('btn-calc').addEventListener('click', function() {
   if (!people.length) { alert('กรุณาเพิ่มรายชื่อคนก่อนนะ!'); return; }
   if (!menus.length)  { alert('กรุณาเพิ่มเมนูอาหารก่อนนะ!'); return; }
 
   var totals = {};
   people.forEach(function(p) { totals[p.id] = { total: 0, items: [] }; });
+  
   var grand = 0;
+  var grandItemsHtml = ''; // ตัวแปรเก็บ HTML ของใบเสร็จรวม
 
   menus.forEach(function(m) {
     var price = parseFloat(m.price) || 0;
+    
+    // สร้างลิสต์ใบเสร็จรวม (เฉพาะที่มีชื่อหรือมีราคา)
+    if (m.name || price > 0) {
+      grandItemsHtml += '<div class="gitem"><span class="gitem-n">' + esc(m.name || 'เมนูไม่มีชื่อ') + '</span><span class="gitem-a">฿' + price.toLocaleString('th-TH',{minimumFractionDigits:2, maximumFractionDigits:2}) + '</span></div>';
+    }
+
     grand += price;
     if (!m.eaters.length) return;
     var share = price / m.eaters.length;
@@ -356,9 +377,10 @@ document.getElementById('btn-calc').addEventListener('click', function() {
     });
   });
 
-  // แก้บั๊กทศนิยม ให้คุมสูงสุดแค่ 2 ตำแหน่ง
-  document.getElementById('grand-total').textContent =
-    '฿' + grand.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // อัปเดตยอดรวมและรายการในกล่องใบเสร็จ
+  document.getElementById('grand-total').textContent = '฿' + grand.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (!grandItemsHtml) grandItemsHtml = '<div class="gitem"><span class="gitem-n">ไม่มีรายการอาหาร</span><span class="gitem-a">-</span></div>';
+  document.getElementById('grand-items').innerHTML = grandItemsHtml;
 
   var con = document.getElementById('summaries');
   con.innerHTML = '';
@@ -396,7 +418,6 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-/* ─── Export (lazy-load scripts) ─────── */
 function loadScript(src, cb) {
   if (document.querySelector('script[src="' + src + '"]')) { cb(); return; }
   var s = document.createElement('script');
@@ -408,7 +429,6 @@ function loadScript(src, cb) {
 var H2C = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 var JPDF = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
 
-// ฟังก์ชันสำหรับเตรียมการ์ดก่อนแคปจอ (ปิดอนิเมชันชั่วคราว)
 function prepareForCapture() {
   document.querySelectorAll('.scard').forEach(function(el) {
     el.style.animation = 'none';
@@ -421,7 +441,7 @@ document.getElementById('btn-img').addEventListener('click', function() {
   var btn = this;
   btn.classList.add('busy'); btn.textContent = '⏳ กำลังสร้าง...';
   
-  prepareForCapture(); // เรียกใช้ก่อนแคป
+  prepareForCapture(); 
 
   loadScript(H2C, function() {
     var target = document.getElementById('summary-sec');
@@ -448,7 +468,7 @@ document.getElementById('btn-pdf').addEventListener('click', function() {
   var btn = this;
   btn.classList.add('busy'); btn.textContent = '⏳ กำลังสร้าง...';
   
-  prepareForCapture(); // เรียกใช้ก่อนแคป
+  prepareForCapture(); 
 
   loadScript(H2C, function() {
     loadScript(JPDF, function() {
@@ -475,7 +495,6 @@ document.getElementById('btn-pdf').addEventListener('click', function() {
   });
 });
 
-/* ─── Reset ──────────────────────────── */
 document.getElementById('btn-reset').addEventListener('click', function() {
   people = []; menus = []; pc = 0; mc = 0;
   document.getElementById('person-list').innerHTML = '';
@@ -489,11 +508,9 @@ document.getElementById('btn-reset').addEventListener('click', function() {
 document.getElementById('btn-addp').addEventListener('click', addPerson);
 document.getElementById('btn-addm').addEventListener('click', addMenu);
 
-/* ─── Init ───────────────────────────── */
 addPerson(); addPerson(); addPerson();
 addMenu(); addMenu();
 </script>
-
 
 </body>
 </html>
